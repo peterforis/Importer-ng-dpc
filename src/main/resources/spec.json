@@ -1,0 +1,12 @@
+[
+  {
+    "operation": "shift",
+    "spec": {
+      "key": "key",
+      "valueType": "valueType",
+      "timestamp": "timestamp",
+      "recordType": "recordType",
+      "intent": "intent"
+    }
+  }
+]
