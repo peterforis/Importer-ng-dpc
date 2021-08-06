@@ -1,0 +1,16 @@
+[
+  {
+    "operation": "shift",
+    "spec": {
+      "@(1,intent)": {
+        "COMPLETED": {
+          "@(2,key)": "key",
+          "@(2,valueType)": "valueType",
+          "@(2,timestamp)": "timestamp",
+          "@(2,recordType)": "recordType",
+          "@(2,intent)": "intent"
+        }
+      }
+    }
+  }
+]
