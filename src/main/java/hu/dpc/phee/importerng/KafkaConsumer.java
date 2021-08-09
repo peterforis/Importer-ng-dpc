@@ -5,6 +5,7 @@ import com.bazaarvoice.jolt.JsonUtils;
 import org.json.JSONObject;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
@@ -15,11 +16,15 @@ import java.util.List;
 public class KafkaConsumer {
 
     @KafkaListener(topics = "zeebe-export", groupId = "importer-ng")
-    public void listenToPartition(@Payload String message, @Header(KafkaHeaders.RECEIVED_PARTITION_ID) int partition) {
-        String joltparsedJson = joltParse(message, "/spec_filter_COMPLETED.json");
+    public void listenToPartition(@Payload String incomingMessage, @Header(KafkaHeaders.RECEIVED_PARTITION_ID) int partition) {
+        String joltparsedJson = joltParse(incomingMessage, "/spec_filter_COMPLETED.json");
         if (joltparsedJson == null) {
-            System.out.println("New basic message: " + message);
+            System.out.println("New basic message: " + incomingMessage);
         } else {
+            JSONObject jsonObject = new JSONObject(joltparsedJson);
+
+            Message message = new Message();
+
             System.out.println("New joltparsed message: " + joltparsedJson);
         }
     }
