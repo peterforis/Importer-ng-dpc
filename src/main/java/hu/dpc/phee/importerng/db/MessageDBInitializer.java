@@ -17,7 +17,7 @@ public class MessageDBInitializer {
         String password = "postgres";
 
         // TODO: change this, it RECREATES db!
-        String createString = "DROP TABLE IF EXISTS MESSAGES; CREATE TABLE MESSAGES "
+        String createString = "DROP TABLE IF EXISTS MESSAGE; CREATE TABLE MESSAGE"
                 + "(id bigint, "
                 + "VALUETYPE varchar, "
                 + "TIMESTAMP bigint, "
@@ -29,7 +29,7 @@ public class MessageDBInitializer {
         try (Connection con = DriverManager.getConnection(url, username, password);
              Statement stmt = con.createStatement()) {
             stmt.executeUpdate(createString);
-            System.out.println("MESSAGES table is successfully created");
+            System.out.println("MESSAGE table is successfully created");
         } catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage());
         }
