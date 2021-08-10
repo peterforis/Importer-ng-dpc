@@ -1,5 +1,6 @@
 package hu.dpc.phee.importerng.db.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -8,11 +9,15 @@ public class Message {
 
     //key
     @Id
+    @Column(name = "id")
     private Long id;
+    @Column(name = "valuetype")
     private String valueType;
-    private int timeStamp;
+    @Column(name = "timestamp")
+    private Long timeStamp;
+    @Column(name = "recordtype")
     private String recordType;
-    private String value;
+    @Column(name = "intent")
     private String intent;
 
     public Message() {
@@ -34,11 +39,11 @@ public class Message {
         this.valueType = valueType;
     }
 
-    public int getTimeStamp() {
+    public Long getTimeStamp() {
         return timeStamp;
     }
 
-    public void setTimeStamp(int timeStamp) {
+    public void setTimeStamp(Long timeStamp) {
         this.timeStamp = timeStamp;
     }
 
@@ -48,14 +53,6 @@ public class Message {
 
     public void setRecordType(String recordType) {
         this.recordType = recordType;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
     }
 
     public String getIntent() {

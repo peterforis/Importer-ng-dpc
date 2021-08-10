@@ -2,12 +2,12 @@
   {
     "operation": "shift",
     "spec": {
-      "@(1,intent)": {
+      "@(intent)": {
         "COMPLETED": {
-          "@(2,key)": "key",
-          "@(2,valueType)": "valueType",
+          "@(2,key)": "id",
+          "@(2,valueType)": "valuetype",
           "@(2,timestamp)": "timestamp",
-          "@(2,recordType)": "recordType",
+          "@(2,recordType)": "recordtype",
           "@(2,intent)": "intent"
         }
       }
