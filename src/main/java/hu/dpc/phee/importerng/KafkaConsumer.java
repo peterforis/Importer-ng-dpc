@@ -36,7 +36,7 @@ public class KafkaConsumer {
             message.setIntent(jsonObject.get("intent").toString());
             messageRepository.save(message);
 
-            System.out.println("New joltparsed message: " + joltparsedJson);
+//            System.out.println("New joltparsed message: " + joltparsedJson);
         }
     }
 

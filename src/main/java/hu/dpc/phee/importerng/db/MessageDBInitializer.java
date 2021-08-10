@@ -18,9 +18,9 @@ public class MessageDBInitializer {
 
         // TODO: change this, it RECREATES db!
         String createString = "DROP TABLE IF EXISTS MESSAGES; CREATE TABLE MESSAGES "
-                + "(id int, "
+                + "(id bigint, "
                 + "VALUETYPE varchar, "
-                + "TIMESTAMP int, "
+                + "TIMESTAMP bigint, "
                 + "RECORDTYPE varchar, "
                 + "VALUE varchar, "
                 + "INTENT varchar)";
