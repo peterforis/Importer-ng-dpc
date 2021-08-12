@@ -9,8 +9,8 @@ public class Message {
 
     //key
     @Id
-    @Column(name = "id")
-    private Long id;
+    @Column(name = "key")
+    private Long key;
     @Column(name = "valuetype")
     private String valueType;
     @Column(name = "timestamp")
@@ -20,19 +20,15 @@ public class Message {
     @Column(name = "intent")
     private String intent;
 
-//    @Type(type = "json")
-//    @Column(columnDefinition = "json")
-//    private String valuej;
-
     public Message() {
     }
 
-    public Long getId() {
-        return id;
+    public Long getKey() {
+        return key;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setKey(Long key) {
+        this.key = key;
     }
 
     public String getValueType() {
