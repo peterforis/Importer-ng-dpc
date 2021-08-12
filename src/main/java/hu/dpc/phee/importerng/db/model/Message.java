@@ -20,6 +20,10 @@ public class Message {
     @Column(name = "intent")
     private String intent;
 
+//    @Type(type = "json")
+//    @Column(columnDefinition = "json")
+//    private String valuej;
+
     public Message() {
     }
 
