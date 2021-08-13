@@ -15,13 +15,13 @@ public class KafkaConsumer {
     private Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    private JoltParser joltParser;
+    private TransactionParser transactionParser;
 
     @KafkaListener(topics = "zeebe-export", groupId = "importer-ng")
-    public void listenToPartition(@Payload String incomingMessage, @Header(KafkaHeaders.RECEIVED_PARTITION_ID) int partition) {
-        boolean parsed = joltParser.joltParse(incomingMessage);
+    public void listenToPartition(@Payload String transaction, @Header(KafkaHeaders.RECEIVED_PARTITION_ID) int partition) {
+        boolean parsed = transactionParser.parseTransaction(transaction);
         if (!parsed) {
-            LOG.info("Did not match any parser: " + incomingMessage);
+            LOG.error("Could not parse: {}", transaction);
         }
     }
 }

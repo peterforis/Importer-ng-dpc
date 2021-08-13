@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class MessageDBInitializer {
+public class DatabaseInitializer {
 
     public static void main(String args[]) {
         // TODO: move it to config file
@@ -14,27 +14,25 @@ public class MessageDBInitializer {
         String password = "postgres";
 
         // TODO: change this, it RECREATES db!
-        String createMessageTableString = "DROP TABLE IF EXISTS MESSAGE; CREATE TABLE MESSAGE"
+        String createEventTableString = "DROP TABLE IF EXISTS EVENT; CREATE TABLE EVENT"
                 + "(KEY bigint, "
-                + "VALUETYPE varchar, "
-                + "TIMESTAMP bigint, "
-                + "RECORDTYPE varchar, "
-                + "VALUE varchar, "
-                + "INTENT varchar)";
-
-        String createProcessDefinitionTableString = "DROP TABLE IF EXISTS PROCESSDEFINITION; CREATE TABLE PROCESSDEFINITION"
-                + "(KEY bigint, "
-                + "TIMESTAMP bigint, "
+                + "PROCESSDEFINITIONKEY bigint, "
                 + "VERSION int, "
-                + "RESOURCENAME varchar, "
-                + "BPMNPROCESSID varchar, "
-                + "PROCESSDEFINITIONKEY varchar)";
+                + "TIMESTAMP bigint, "
+                + "EVENTTEXT varchar)";
+        String createProcessDefinitionTableString = "DROP TABLE IF EXISTS PROCESSDEFINITION; CREATE TABLE PROCESSDEFINITION"
+                + "(ID bigint, "
+                + "PROCESSDEFINITIONKEY varchar,"
+                + "VERSION int, "
+                + "BPMNPROCESSID varchar,"
+                + "RESOURCENAME varchar)";
+
 
         try (Connection con = DriverManager.getConnection(url, username, password);
              Statement stmt = con.createStatement()) {
-            stmt.executeUpdate(createMessageTableString);
+            stmt.executeUpdate(createEventTableString);
             stmt.executeUpdate(createProcessDefinitionTableString);
-            System.out.println("MESSAGE and PROCESSDEFINITION tables are created successfully");
+            System.out.println("EVENT and PROCESSDEFINITION tables are created successfully");
         } catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage());
         }

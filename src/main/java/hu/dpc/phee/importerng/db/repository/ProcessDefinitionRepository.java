@@ -22,4 +22,6 @@ public interface ProcessDefinitionRepository extends CrudRepository<ProcessDefin
 
     @Override
     void deleteById(Long aLong);
+
+    Optional<ProcessDefinition> findByProcessDefinitionKey(Long processDefinitionKey);
 }

@@ -7,8 +7,8 @@ import org.springframework.context.annotation.Configuration;
 public class ImporterConfiguration {
 
     @Bean
-    public JoltParser JoltParser() {
-        return new JoltParser();
+    public TransactionParser transactionParser() {
+        return new TransactionParser();
     }
 
 }

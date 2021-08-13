@@ -1,20 +1,20 @@
 package hu.dpc.phee.importerng.db.repository;
 
-import hu.dpc.phee.importerng.db.model.Message;
+import hu.dpc.phee.importerng.db.model.Event;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface MessageRepository extends CrudRepository<Message, Long> {
+public interface EventRepository extends CrudRepository<Event, Long> {
 
     @Override
-    Iterable<Message> findAll();
+    Iterable<Event> findAll();
 
     @Override
-    Iterable<Message> findAllById(Iterable<Long> iterable);
+    Iterable<Event> findAllById(Iterable<Long> iterable);
 
     @Override
-    <S extends Message> S save(S s);
+    <S extends Event> S save(S s);
 
     @Override
     void deleteById(Long aLong);

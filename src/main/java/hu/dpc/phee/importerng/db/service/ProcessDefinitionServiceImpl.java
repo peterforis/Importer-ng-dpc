@@ -37,4 +37,9 @@ public class ProcessDefinitionServiceImpl implements ProcessDefinitionService {
     public long count() {
         return processDefinitionRepository.count();
     }
+
+
+    public Optional<ProcessDefinition> findByProcessDefintionKey(Long processDefinitionKey){
+        return processDefinitionRepository.findByProcessDefinitionKey(processDefinitionKey);
+    }
 }

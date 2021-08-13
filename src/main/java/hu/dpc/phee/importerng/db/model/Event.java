@@ -4,21 +4,25 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 
 @Entity
-public class ProcessDefinition {
+public class Event {
 
+    //key
     @Id
-    private int id;
+    private Long key;
     private Long processDefinitionKey;
     private int version;
-    private String bpmnProcessid;
-    private String resourceName;
+    private Long timeStamp;
+    private String eventText;
 
-    public int getId() {
-        return id;
+    public Event() {
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public Long getKey() {
+        return key;
+    }
+
+    public void setKey(Long key) {
+        this.key = key;
     }
 
     public Long getProcessDefinitionKey() {
@@ -37,19 +41,19 @@ public class ProcessDefinition {
         this.version = version;
     }
 
-    public String getBpmnProcessid() {
-        return bpmnProcessid;
+    public Long getTimeStamp() {
+        return timeStamp;
     }
 
-    public void setBpmnProcessid(String bpmnProcessid) {
-        this.bpmnProcessid = bpmnProcessid;
+    public void setTimeStamp(Long timeStamp) {
+        this.timeStamp = timeStamp;
     }
 
-    public String getResourceName() {
-        return resourceName;
+    public String getEventText() {
+        return eventText;
     }
 
-    public void setResourceName(String resourceName) {
-        this.resourceName = resourceName;
+    public void setEventText(String eventText) {
+        this.eventText = eventText;
     }
 }

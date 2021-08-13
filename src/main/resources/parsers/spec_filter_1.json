@@ -8,7 +8,7 @@
           "@(2,valueType)": "valueType",
           "@(2,timestamp)": "timestamp",
           "@(2,recordType)": "recordType",
-          "#2": "filterId"
+          "#Event": "type"
         }
       }
     }
