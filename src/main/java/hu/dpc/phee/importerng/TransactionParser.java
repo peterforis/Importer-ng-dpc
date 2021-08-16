@@ -11,11 +11,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
+import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class TransactionParser {
 
-    private Logger LOG = LoggerFactory.getLogger(this.getClass());
+    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private EventRepository eventRepository;
@@ -26,12 +28,43 @@ public class TransactionParser {
     private Chainr chainr;
 
     @PostConstruct
-    public void setup () {
-        // TODO add parser
-        String eventParserPath = "/parsers/spec_filter_1.json";
+    public void setup() {
+        mergeSpecs();
+
+        String eventParserPath = "/merged_spec.json";
         List<Object> chainrSpecJSON = JsonUtils.classpathToList(eventParserPath);
         LOG.info("Loaded {} parsers from {}", chainrSpecJSON.size(), eventParserPath);
         chainr = Chainr.fromSpec(chainrSpecJSON);
+    }
+
+    public void mergeSpecs() {
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter("./src/main/resources/merged_spec.json"));
+
+            File directoryPath = new File("src/main/resources/parsers");
+            File[] filesList = directoryPath.listFiles();
+            if (filesList.length == 0) {
+                LOG.error("No spec files found");
+                return;
+            }
+
+            ArrayList<StringBuilder> result = new ArrayList<>();
+
+            for (File file : filesList) {
+                StringBuilder stringBuilder = new StringBuilder();
+                BufferedReader br = new BufferedReader(new FileReader(file.getAbsolutePath()));
+                String line;
+                while ((line = br.readLine()) != null) {
+                    stringBuilder.append(line).append("\n");
+                }
+                stringBuilder.deleteCharAt(stringBuilder.indexOf("[")).deleteCharAt(stringBuilder.lastIndexOf("]"));
+                result.add(stringBuilder);
+            }
+            writer.append("[\n").append(String.join(",\n", result)).append("\n]");
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public boolean parseTransaction(String transaction) {
@@ -86,4 +119,5 @@ public class TransactionParser {
     public String jsonPrettyPrint(String jsonString) {
         return new JSONObject(jsonString).toString();
     }
+
 }

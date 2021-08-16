@@ -1,0 +1,12 @@
+[
+    {
+        "operation": "shift",
+        "spec": {
+          "@(recordType)": {
+            "EVENT": {
+              "key": "key"
+            }
+          }
+        }
+    }
+]

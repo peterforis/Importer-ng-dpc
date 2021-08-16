@@ -2,8 +2,8 @@
   {
     "operation": "shift",
     "spec": {
-      "@(valueType)": {
-        "DEPLOYMENT": {
+      "@(intent)": {
+        "COMPLETED": {
           "@(2,key)": "key",
           "@(2,valueType)": "valueType",
           "@(2,timestamp)": "timestamp",
@@ -16,11 +16,7 @@
   {
     "operation": "shift",
     "spec": {
-      "@(recordType)": {
-        "EVENT": {
-          "key": "key"
-        }
-      }
+      "intent": "intent"
     }
   }
 ]
