@@ -2,44 +2,53 @@ package hu.dpc.phee.importerng;
 
 import com.bazaarvoice.jolt.Chainr;
 import com.bazaarvoice.jolt.JsonUtils;
-import hu.dpc.phee.importerng.db.model.Event;
-import hu.dpc.phee.importerng.db.repository.EventRepository;
-import hu.dpc.phee.importerng.db.repository.ProcessDefinitionRepository;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
+import java.sql.*;
 import java.util.List;
 
 public class TransactionParser {
 
     private Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
-    private EventRepository eventRepository;
-
-    @Autowired
-    private ProcessDefinitionRepository processDefinitionRepository;
-
     private Chainr chainr;
 
+    private Connection conn;
+
     @PostConstruct
-    public void setup () {
+    public void setup() {
         // TODO add parser
         String eventParserPath = "/parsers/spec_filter_1.json";
         List<Object> chainrSpecJSON = JsonUtils.classpathToList(eventParserPath);
         LOG.info("Loaded {} parsers from {}", chainrSpecJSON.size(), eventParserPath);
         chainr = Chainr.fromSpec(chainrSpecJSON);
+
+        String url = "jdbc:postgresql://localhost:5432/testdb";
+        String username = "postgres";
+        String password = "postgres";
+        try {
+            conn = DriverManager.getConnection(url, username, password);
+        } catch (SQLException ex) {
+            System.out.println("SQLException: " + ex.getMessage());
+        }
     }
 
     public boolean parseTransaction(String transaction) {
         Long processDefinitionKey = new JSONObject(transaction).getLong("processdefinitionkey");
         // TODO create caching for performance
-        if (processDefinitionRepository.findByProcessDefinitionKey(processDefinitionKey).isEmpty()) {
-            LOG.error("ProcessDefinition not found with processDefinitionKey: {}, transaction was: {}", processDefinitionKey, transaction);
-            return false;
+        String getByprocessDefinitionKey = "SELECT COUNT(*) AS total FROM PROCESSDEFINITION WHERE PROCESSDEFINITIONKEY = " + processDefinitionKey;
+        try {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(getByprocessDefinitionKey);
+            if (rs.getInt("total") == 0) {
+                LOG.error("ProcessDefinition not found with processDefinitionKey: {}, transaction was: {}", processDefinitionKey, transaction);
+                return false;
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
         Object transformedOutput = chainr.transform(JsonUtils.jsonToObject(transaction));
         if (transformedOutput == null) {
@@ -55,15 +64,18 @@ public class TransactionParser {
 
         Long key = json.getLong("key");
 
-        Event event = new Event();
-        event.setKey(key);
-        event.setProcessDefinitionKey(json.getLong("processdefinitionkey"));
-        event.setVersion(json.getInt("version"));
-        event.setTimeStamp(json.getLong("timestamp"));
-        event.setEventText(json.get("eventtext").toString());
-
-        eventRepository.save(event);
-
+        String createEvent = "INSERT INTO EVENT VALUES + ("
+                + key + ", "
+                + json.getLong("processdefinitionkey") + ", "
+                + json.getInt("version") + ", "
+                + json.getLong("timestamp") + ", "
+                + json.get("eventtext") + ")";
+        try {
+            Statement stmt = conn.createStatement();
+            stmt.executeUpdate(createEvent);
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
         LOG.debug("Saved event with key: {}", key);
     }
 
