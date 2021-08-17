@@ -11,7 +11,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,31 +28,33 @@ public class TransactionParser {
     @Autowired
     private ProcessDefinitionRepository processDefinitionRepository;
 
-    private Chainr chainr;
+    private List<Chainr> chainrs;
+
+    private List<String> specs;
 
     @PostConstruct
     public void setup() {
-        mergeSpecs();
-
-        String eventParserPath = "/merged_spec.json";
-        List<Object> chainrSpecJSON = JsonUtils.classpathToList(eventParserPath);
-        LOG.info("Loaded {} parsers from {}", chainrSpecJSON.size(), eventParserPath);
-        chainr = Chainr.fromSpec(chainrSpecJSON);
+        loadSpecs();
+        loadParsers();
     }
 
-    public void mergeSpecs() {
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter("./src/main/resources/merged_spec.json"));
+    public void loadParsers(){
+        for(String spec: specs){
+            String eventParserPath = "/parsers/" + spec;
+            List<Object> chainrSpecJSON = JsonUtils.classpathToList(eventParserPath);
+            LOG.info("Loaded parser from {}", eventParserPath);
+            chainrs.add(Chainr.fromSpec(chainrSpecJSON));
+        }
+    }
 
+    public void loadSpecs() {
+        try {
             File directoryPath = new File("src/main/resources/parsers");
             File[] filesList = directoryPath.listFiles();
             if (filesList.length == 0) {
-                LOG.error("No spec files found");
+                LOG.error("No spec files found under /resources/parsers/");
                 return;
             }
-
-            ArrayList<StringBuilder> result = new ArrayList<>();
-
             for (File file : filesList) {
                 StringBuilder stringBuilder = new StringBuilder();
                 BufferedReader br = new BufferedReader(new FileReader(file.getAbsolutePath()));
@@ -57,17 +62,14 @@ public class TransactionParser {
                 while ((line = br.readLine()) != null) {
                     stringBuilder.append(line).append("\n");
                 }
-                stringBuilder.deleteCharAt(stringBuilder.indexOf("[")).deleteCharAt(stringBuilder.lastIndexOf("]"));
-                result.add(stringBuilder);
+                specs.add(stringBuilder.toString());
             }
-            writer.append("[\n").append(String.join(",\n", result)).append("\n]");
-            writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public boolean parseTransaction(String transaction) {
+    public boolean parseTransaction(String transaction, Chainr chainr) {
         Long processDefinitionKey = new JSONObject(transaction).getLong("processdefinitionkey");
         // TODO create caching for performance
         if (processDefinitionRepository.findByProcessDefinitionKey(processDefinitionKey).isEmpty()) {
@@ -120,4 +122,11 @@ public class TransactionParser {
         return new JSONObject(jsonString).toString();
     }
 
+    public List<Chainr> getChainrs() {
+        return chainrs;
+    }
+
+    public void setChainrs(List<Chainr> chainrs) {
+        this.chainrs = chainrs;
+    }
 }
