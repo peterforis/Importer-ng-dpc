@@ -16,23 +16,23 @@ public class DatabaseInitializer {
         // TODO: change this, it RECREATES db!
         String createEventTableString = "DROP TABLE IF EXISTS EVENT; CREATE TABLE EVENT"
                 + "(KEY bigint, "
-                + "PROCESSDEFINITIONKEY bigint, "
+                + "PROCESS_DEFINITION_KEY bigint, "
                 + "VERSION int, "
-                + "TIMESTAMP bigint, "
-                + "EVENTTEXT varchar)";
-        String createProcessDefinitionTableString = "DROP TABLE IF EXISTS PROCESSDEFINITION; CREATE TABLE PROCESSDEFINITION"
-                + "(ID bigint, "
-                + "PROCESSDEFINITIONKEY varchar,"
+                + "TIME_STAMP bigint, "
+                + "EVENT_TEXT varchar)";
+        String createProcessDefinitionTableString = "DROP TABLE IF EXISTS PROCESS_DEFINITION; CREATE TABLE PROCESS_DEFINITION"
+                + "(ID integer, "
+                + "PROCESS_DEFINITION_KEY bigint,"
                 + "VERSION int, "
-                + "BPMNPROCESSID varchar,"
-                + "RESOURCENAME varchar)";
+                + "BPMN_PROCESS_ID varchar,"
+                + "RESOURCE_NAME varchar)";
 
 
         try (Connection con = DriverManager.getConnection(url, username, password);
              Statement stmt = con.createStatement()) {
             stmt.executeUpdate(createEventTableString);
             stmt.executeUpdate(createProcessDefinitionTableString);
-            System.out.println("EVENT and PROCESSDEFINITION tables are created successfully");
+            System.out.println("EVENT and PROCESS_DEFINITION tables are created successfully");
         } catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage());
         }
