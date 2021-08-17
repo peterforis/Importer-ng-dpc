@@ -5,16 +5,14 @@ import com.bazaarvoice.jolt.JsonUtils;
 import hu.dpc.phee.importerng.db.model.Event;
 import hu.dpc.phee.importerng.db.repository.EventRepository;
 import hu.dpc.phee.importerng.db.repository.ProcessDefinitionRepository;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,12 +32,14 @@ public class TransactionParser {
 
     @PostConstruct
     public void setup() {
+        specs = new ArrayList<>();
+        chainrs = new ArrayList<>();
         loadSpecs();
         loadParsers();
     }
 
-    public void loadParsers(){
-        for(String spec: specs){
+    public void loadParsers() {
+        for (String spec : specs) {
             String eventParserPath = "/parsers/" + spec;
             List<Object> chainrSpecJSON = JsonUtils.classpathToList(eventParserPath);
             LOG.info("Loaded parser from {}", eventParserPath);
@@ -48,29 +48,25 @@ public class TransactionParser {
     }
 
     public void loadSpecs() {
-        try {
-            File directoryPath = new File("src/main/resources/parsers");
-            File[] filesList = directoryPath.listFiles();
-            if (filesList.length == 0) {
-                LOG.error("No spec files found under /resources/parsers/");
-                return;
-            }
-            for (File file : filesList) {
-                StringBuilder stringBuilder = new StringBuilder();
-                BufferedReader br = new BufferedReader(new FileReader(file.getAbsolutePath()));
-                String line;
-                while ((line = br.readLine()) != null) {
-                    stringBuilder.append(line).append("\n");
-                }
-                specs.add(stringBuilder.toString());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        File directoryPath = new File("src/main/resources/parsers");
+        File[] filesList = directoryPath.listFiles();
+        if (filesList.length == 0) {
+            LOG.error("No spec files found under /resources/parsers/");
+            return;
+        }
+        for (File file : filesList) {
+            specs.add(file.getName());
         }
     }
 
     public boolean parseTransaction(String transaction, Chainr chainr) {
-        Long processDefinitionKey = new JSONObject(transaction).getLong("processdefinitionkey");
+        Long processDefinitionKey = 0L;
+        try {
+            processDefinitionKey = new JSONObject(transaction).getJSONObject("value").getJSONArray("processesMetadata").getJSONObject(0).getLong("processDefinitionKey");
+        }catch(JSONException e){
+            LOG.error("Could not find processDefinitionKey in transaction, transaction was: {}", transaction);
+            return false;
+        }
         // TODO create caching for performance
         if (processDefinitionRepository.findByProcessDefinitionKey(processDefinitionKey).isEmpty()) {
             LOG.error("ProcessDefinition not found with processDefinitionKey: {}, transaction was: {}", processDefinitionKey, transaction);
