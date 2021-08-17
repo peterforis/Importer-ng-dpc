@@ -37,9 +37,6 @@ public class TransactionParser {
     }
 
     public boolean parseTransaction(String transaction) {
-
-        LOG.info("transaction" + transaction);
-
         Object transformedOutput = chainr.transform(JsonUtils.jsonToObject(transaction));
         if (transformedOutput == null) {
             LOG.warn("Parsers did not parse transaction, transaction was: {}", transaction);
@@ -47,10 +44,7 @@ public class TransactionParser {
         }
 
         // TODO create caching for performance
-        JSONObject json = new JSONObject(transformedOutput);
-
-        LOG.info("transaction2" + json);
-
+        JSONObject json = new JSONObject(JsonUtils.toJsonString(transformedOutput));
         Long processDefinitionKey = json.getLong("processDefinitionKey");
         Optional<ProcessDefinition> processDefinition = processDefinitionRepository.findByProcessDefinitionKey(processDefinitionKey);
         if (processDefinition.isEmpty()) {
@@ -76,5 +70,21 @@ public class TransactionParser {
         eventRepository.save(event);
 
         LOG.debug("Saved event with key: {}", key);
+    }
+
+    private void saveProcessDefinition(JSONObject json) {
+
+        int id = json.getInt("id");
+
+        ProcessDefinition processDefinition = new ProcessDefinition();
+        processDefinition.setId(id);
+        processDefinition.setProcessDefinitionKey(json.getLong("processdefinitionkey"));
+        processDefinition.setVersion(json.getInt("version"));
+        processDefinition.setBpmnProcessId(json.getString("bpmnProcessId"));
+        processDefinition.setResourceName(json.getString("resourceName"));
+
+        processDefinitionRepository.save(processDefinition);
+
+        LOG.debug("Saved processDefinition with id: {}", id);
     }
 }
