@@ -21,7 +21,7 @@ public class KafkaConsumer {
     public void listenToPartition(@Payload String transaction, @Header(KafkaHeaders.RECEIVED_PARTITION_ID) int partition) {
         boolean parsed = transactionParser.parseTransaction(transaction);
         if (!parsed) {
-            LOG.error("Could not parse: {}", transaction);
+            LOG.warn("Could not parse: {}", transaction);
         }
     }
 }

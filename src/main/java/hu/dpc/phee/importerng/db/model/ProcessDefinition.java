@@ -1,16 +1,14 @@
 package hu.dpc.phee.importerng.db.model;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import org.springframework.data.annotation.Id;
 
-@Entity
 public class ProcessDefinition {
 
     @Id
     private int id;
     private Long processDefinitionKey;
     private int version;
-    private String bpmnProcessid;
+    private String bpmnProcessId;
     private String resourceName;
 
     public int getId() {
@@ -37,12 +35,12 @@ public class ProcessDefinition {
         this.version = version;
     }
 
-    public String getBpmnProcessid() {
-        return bpmnProcessid;
+    public String getBpmnProcessId() {
+        return bpmnProcessId;
     }
 
-    public void setBpmnProcessid(String bpmnProcessid) {
-        this.bpmnProcessid = bpmnProcessid;
+    public void setBpmnProcessId(String bpmnProcessId) {
+        this.bpmnProcessId = bpmnProcessId;
     }
 
     public String getResourceName() {

@@ -2,15 +2,13 @@
   {
     "operation": "shift",
     "spec": {
-      "@(intent)": {
-        "COMPLETED": {
-          "@(2,key)": "key",
-          "@(2,valueType)": "valueType",
-          "@(2,timestamp)": "timestamp",
-          "@(2,recordType)": "recordType",
-          "#Event": "type"
-        }
-      }
+      "value": {
+        "processDefinitionKey": "processDefinitionKey"
+      },
+      "key": "key",
+      "valueType": "valueType",
+      "timestamp": "timestamp",
+      "recordType": "recordType"
     }
   }
 ]
