@@ -2,12 +2,17 @@ package hu.dpc.phee.importerng;
 
 import com.bazaarvoice.jolt.Chainr;
 import com.bazaarvoice.jolt.JsonUtils;
+import hu.dpc.phee.importerng.db.repository.EventRepository;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.List;
 
 public class TransactionParser {
@@ -17,6 +22,13 @@ public class TransactionParser {
     private Chainr chainr;
 
     private Connection conn;
+
+//    @Autowired
+//    EventRepository eventRepository;
+
+    public static final String INSERT_SQL_QUERY = "INSERT INTO EVENT VALUES(?,?,?,?,?)";
+    public static final String SELECT_SQL_QUERY_BY_ID_FROM_EVENT = "SELECT * FROM EVENT WHERE ID=?";
+    public static final String SELECT_SQL_QUERY_BY_PROCESS_DEFINITION_KEY_FROM_PROCESSDEFINITION = "SELECT * FROM PROCESSDEFINITION WHERE PROCESSDEFINITIONKEY=?";
 
     @PostConstruct
     public void setup() {
@@ -39,17 +51,19 @@ public class TransactionParser {
     public boolean parseTransaction(String transaction) {
         Long processDefinitionKey = new JSONObject(transaction).getLong("processdefinitionkey");
         // TODO create caching for performance
-        String getByprocessDefinitionKey = "SELECT COUNT(*) AS total FROM PROCESSDEFINITION WHERE PROCESSDEFINITIONKEY = " + processDefinitionKey;
+
         try {
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(getByprocessDefinitionKey);
-            if (rs.getInt("total") == 0) {
-                LOG.error("ProcessDefinition not found with processDefinitionKey: {}, transaction was: {}", processDefinitionKey, transaction);
+            PreparedStatement ps = conn.prepareStatement(SELECT_SQL_QUERY_BY_PROCESS_DEFINITION_KEY_FROM_PROCESSDEFINITION);
+            ps.setLong(1, processDefinitionKey);
+            boolean processDefinitionExists = ps.execute();
+            conn.commit();
+            if (!processDefinitionExists) {
                 return false;
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
+
         Object transformedOutput = chainr.transform(JsonUtils.jsonToObject(transaction));
         if (transformedOutput == null) {
             LOG.warn("Parsers did not parse transaction with processDefinitionKey: {}, transaction was: {}", processDefinitionKey, transaction);
@@ -64,18 +78,19 @@ public class TransactionParser {
 
         Long key = json.getLong("key");
 
-        String createEvent = "INSERT INTO EVENT VALUES + ("
-                + key + ", "
-                + json.getLong("processdefinitionkey") + ", "
-                + json.getInt("version") + ", "
-                + json.getLong("timestamp") + ", "
-                + json.get("eventtext") + ")";
         try {
-            Statement stmt = conn.createStatement();
-            stmt.executeUpdate(createEvent);
+            PreparedStatement ps = conn.prepareStatement(INSERT_SQL_QUERY);
+            ps.setLong(1, key);
+            ps.setLong(2, json.getLong("processdefinitionkey"));
+            ps.setInt(3, json.getInt("version"));
+            ps.setLong(4, json.getLong("timestamp"));
+            ps.setString(5, json.getString("eventtext"));
+            ps.execute();
+            conn.commit();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
+
         LOG.debug("Saved event with key: {}", key);
     }
 
