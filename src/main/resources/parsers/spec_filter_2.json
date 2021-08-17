@@ -4,7 +4,7 @@
         "spec": {
           "@(recordType)": {
             "EVENT": {
-              "key": "key"
+              "@(2,key)": "key"
             }
           }
         }

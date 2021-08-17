@@ -2,13 +2,12 @@
   {
     "operation": "shift",
     "spec": {
-      "@(valueType)": {
-        "DEPLOYMENT": {
+      "@(intent)": {
+        "CREATED": {
           "@(2,key)": "key",
           "@(2,valueType)": "valueType",
           "@(2,timestamp)": "timestamp",
-          "@(2,recordType)": "recordType",
-          "#Event": "type"
+          "@(2,recordType)": "recordType"
         }
       }
     }
@@ -18,7 +17,23 @@
     "spec": {
       "@(recordType)": {
         "EVENT": {
-          "key": "key"
+          "@(2,key)": "key",
+          "@(2,valueType)": "valueType",
+          "@(2,timestamp)": "timestamp",
+          "@(2,recordType)": "recordType"
+        }
+      }
+    }
+  },
+  {
+    "operation": "shift",
+    "spec": {
+      "@(valueType)": {
+        "DEPLOYMENT": {
+          "@(2,key)": "key",
+          "@(2,valueType)": "valueType",
+          "@(2,timestamp)": "timestamp",
+          "@(2,recordType)": "recordType"
         }
       }
     }
