@@ -3,6 +3,7 @@ package hu.dpc.phee.importerng;
 import com.bazaarvoice.jolt.Chainr;
 import com.bazaarvoice.jolt.JsonUtils;
 import hu.dpc.phee.importerng.db.model.Event;
+import hu.dpc.phee.importerng.db.model.ProcessDefinition;
 import hu.dpc.phee.importerng.db.repository.EventRepository;
 import hu.dpc.phee.importerng.db.repository.ProcessDefinitionRepository;
 import org.json.JSONException;
@@ -15,16 +16,17 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class TransactionParser {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    private EventRepository eventRepository;
+    EventRepository eventRepository;
 
     @Autowired
-    private ProcessDefinitionRepository processDefinitionRepository;
+    ProcessDefinitionRepository processDefinitionRepository;
 
     private List<Chainr> chainrs;
 
@@ -60,29 +62,26 @@ public class TransactionParser {
     }
 
     public boolean parseTransaction(String transaction, Chainr chainr) {
-        Long processDefinitionKey = 0L;
-        try {
-            processDefinitionKey = new JSONObject(transaction).getJSONObject("value").getJSONArray("processesMetadata").getJSONObject(0).getLong("processDefinitionKey");
-        }catch(JSONException e){
-            LOG.error("Could not find processDefinitionKey in transaction, transaction was: {}", transaction);
-            return false;
-        }
-        // TODO create caching for performance
-        if (processDefinitionRepository.findByProcessDefinitionKey(processDefinitionKey).isEmpty()) {
-            LOG.error("ProcessDefinition not found with processDefinitionKey: {}, transaction was: {}", processDefinitionKey, transaction);
-            return false;
-        }
         Object transformedOutput = chainr.transform(JsonUtils.jsonToObject(transaction));
         if (transformedOutput == null) {
-            LOG.warn("Parsers did not parse transaction with processDefinitionKey: {}, transaction was: {}", processDefinitionKey, transaction);
+            LOG.warn("Parsers did not parse transaction, transaction was: {}", transaction);
             return false;
         }
-        saveEvent(JsonUtils.toJsonString(transformedOutput));
+
+        // TODO create caching for performance
+        JSONObject json = new JSONObject(JsonUtils.toJsonString(transformedOutput));
+        Long processDefinitionKey = json.getLong("processDefinitionKey");
+        Optional<ProcessDefinition> processDefinition = processDefinitionRepository.findByProcessDefinitionKey(processDefinitionKey);
+        if (processDefinition.isEmpty()) {
+            LOG.warn("Could not find a processDefinition with processDefinitionKey {}, transaction was {}", processDefinitionKey, transaction);
+            return false;
+        }
+
+        saveEvent(json);
         return true;
     }
 
-    private void saveEvent(String parsedJsonString) {
-        JSONObject json = new JSONObject(parsedJsonString);
+    private void saveEvent(JSONObject json) {
 
         Long key = json.getLong("key");
 
@@ -91,31 +90,27 @@ public class TransactionParser {
         event.setProcessDefinitionKey(json.getLong("processdefinitionkey"));
         event.setVersion(json.getInt("version"));
         event.setTimeStamp(json.getLong("timestamp"));
-        event.setEventText(json.get("eventtext").toString());
+        event.setEventText(json.getString("eventtext"));
 
         eventRepository.save(event);
 
         LOG.debug("Saved event with key: {}", key);
     }
 
-//    public void saveProcessDefinition(String joltParsedJson) {
-//        JSONObject jsonObject = new JSONObject(joltParsedJson);
-//
-//        ProcessDefinition processDefinition = new ProcessDefinition();
-//
-//        processDefinition.setId((Integer) jsonObject.get("id"));
-//        processDefinition.setProcessDefinitionKey((Long) jsonObject.get("processdefinitionkey"));
-//        processDefinition.setVersion((Integer) jsonObject.get("version"));
-//        processDefinition.setBpmnProcessid(jsonObject.get("timestamp").toString());
-//        processDefinition.setResourceName(jsonObject.get("eventtext").toString());
-//
-//        processDefinitionRepository.save(processDefinition);
-//
-//        LOG.info("Parsed as PROCESSDEFINITION");
-//    }
+    private void saveProcessDefinition(JSONObject json) {
 
-    public String jsonPrettyPrint(String jsonString) {
-        return new JSONObject(jsonString).toString();
+        int id = json.getInt("id");
+
+        ProcessDefinition processDefinition = new ProcessDefinition();
+        processDefinition.setId(id);
+        processDefinition.setProcessDefinitionKey(json.getLong("processdefinitionkey"));
+        processDefinition.setVersion(json.getInt("version"));
+        processDefinition.setBpmnProcessId(json.getString("bpmnProcessId"));
+        processDefinition.setResourceName(json.getString("resourceName"));
+
+        processDefinitionRepository.save(processDefinition);
+
+        LOG.debug("Saved processDefinition with id: {}", id);
     }
 
     public List<Chainr> getChainrs() {

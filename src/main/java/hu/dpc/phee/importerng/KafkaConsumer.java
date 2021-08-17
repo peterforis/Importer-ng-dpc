@@ -26,7 +26,7 @@ public class KafkaConsumer {
 //        TODO: chainr need to be changed later
         boolean parsed = transactionParser.parseTransaction(transaction, transactionParser.getChainrs().get(0));
         if (!parsed) {
-            LOG.error("Could not parse: {}", transaction);
+            LOG.warn("Could not parse: {}", transaction);
         }
     }
 }

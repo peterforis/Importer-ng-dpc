@@ -1,12 +1,9 @@
 package hu.dpc.phee.importerng.db.model;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import org.springframework.data.annotation.Id;
 
-@Entity
 public class Event {
 
-    //key
     @Id
     private Long key;
     private Long processDefinitionKey;
