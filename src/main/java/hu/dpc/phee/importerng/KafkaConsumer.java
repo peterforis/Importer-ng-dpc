@@ -23,8 +23,7 @@ public class KafkaConsumer {
 
     @KafkaListener(topics = "zeebe-export", groupId = "importer-ng")
     public void listenToPartition(@Payload String transaction, @Header(KafkaHeaders.RECEIVED_PARTITION_ID) int partition) {
-//        TODO: chainr need to be changed later
-        boolean parsed = transactionParser.parseTransaction(transaction, transactionParser.getChainrs().get(0));
+        boolean parsed = transactionParser.parseTransaction(transaction);
         if (!parsed) {
             LOG.warn("Could not parse: {}", transaction);
         }

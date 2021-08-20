@@ -1,12 +1,10 @@
 [
-    {
-        "operation": "shift",
-        "spec": {
-          "@(recordType)": {
-            "EVENT": {
-              "@(2,key)": "key"
-            }
-          }
-        }
+  {
+    "operation": "shift",
+    "spec": {
+          "value": "eventText",
+          "key": "key",
+          "timestamp": "timestamp"
     }
+  }
 ]

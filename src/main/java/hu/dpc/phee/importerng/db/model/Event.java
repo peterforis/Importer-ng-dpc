@@ -1,8 +1,9 @@
 package hu.dpc.phee.importerng.db.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.domain.Persistable;
 
-public class Event {
+public class Event implements Persistable<Long> {
 
     @Id
     private Long key;
@@ -52,5 +53,15 @@ public class Event {
 
     public void setEventText(String eventText) {
         this.eventText = eventText;
+    }
+
+    @Override
+    public Long getId() {
+        return key;
+    }
+
+    @Override
+    public boolean isNew() {
+        return true;
     }
 }
