@@ -1,0 +1,10 @@
+[
+  {
+    "operation": "shift",
+    "spec": {
+          "value": "eventText",
+          "key": "key",
+          "timestamp": "timestamp"
+    }
+  }
+]

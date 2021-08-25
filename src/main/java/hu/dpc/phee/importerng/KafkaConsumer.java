@@ -3,6 +3,7 @@ package hu.dpc.phee.importerng;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
@@ -11,6 +12,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class KafkaConsumer {
+
+    @Value("con.url")
+    private String url;
 
     private Logger LOG = LoggerFactory.getLogger(this.getClass());
 
@@ -21,7 +25,7 @@ public class KafkaConsumer {
     public void listenToPartition(@Payload String transaction, @Header(KafkaHeaders.RECEIVED_PARTITION_ID) int partition) {
         boolean parsed = transactionParser.parseTransaction(transaction);
         if (!parsed) {
-            LOG.error("Could not parse: {}", transaction);
+            LOG.warn("Could not parse: {}", transaction);
         }
     }
 }

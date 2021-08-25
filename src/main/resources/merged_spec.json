@@ -12,5 +12,11 @@
         }
       }
     }
+  },
+  {
+    "operation": "shift",
+    "spec": {
+      "intent": "intent"
+    }
   }
 ]

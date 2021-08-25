@@ -2,115 +2,122 @@ package hu.dpc.phee.importerng;
 
 import com.bazaarvoice.jolt.Chainr;
 import com.bazaarvoice.jolt.JsonUtils;
+import hu.dpc.phee.importerng.db.model.Event;
+import hu.dpc.phee.importerng.db.model.ProcessDefinition;
+import hu.dpc.phee.importerng.db.repository.EventRepository;
+import hu.dpc.phee.importerng.db.repository.ProcessDefinitionRepository;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.List;
+import java.io.File;
+import java.util.*;
 
+@Component
 public class TransactionParser {
 
-    private Logger LOG = LoggerFactory.getLogger(this.getClass());
+    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-    private Chainr chainr;
+    @Autowired
+    EventRepository eventRepository;
 
-    private Connection conn;
+    @Autowired
+    ProcessDefinitionRepository processDefinitionRepository;
 
-//    @Autowired
-//    EventRepository eventRepository;
-
-    public static final String INSERT_SQL_QUERY = "INSERT INTO EVENT VALUES(?,?,?,?,?)";
-    public static final String SELECT_SQL_QUERY_BY_ID_FROM_EVENT = "SELECT * FROM EVENT WHERE ID=?";
-    public static final String SELECT_SQL_QUERY_BY_PROCESS_DEFINITION_KEY_FROM_PROCESSDEFINITION = "SELECT * FROM PROCESSDEFINITION WHERE PROCESSDEFINITIONKEY=?";
+    private Map<String, Chainr> chainrs = new HashMap<>();
 
     @PostConstruct
     public void setup() {
-        // TODO add parser
-        String eventParserPath = "/parsers/spec_filter_1.json";
-        List<Object> chainrSpecJSON = JsonUtils.classpathToList(eventParserPath);
-        LOG.info("Loaded {} parsers from {}", chainrSpecJSON.size(), eventParserPath);
-        chainr = Chainr.fromSpec(chainrSpecJSON);
+        ArrayList<String> specs = new ArrayList<>();
+        File directoryPath = new File("src/main/resources/parsers");
+        File[] filesList = directoryPath.listFiles();
+        if (filesList.length == 0) {
+            LOG.error("No spec files found under /resources/parsers/");
+            return;
+        }
+        for (File file : filesList) {
+            specs.add(file.getName());
+        }
 
-        String url = "jdbc:postgresql://localhost:5432/testdb";
-        String username = "postgres";
-        String password = "postgres";
-        try {
-            conn = DriverManager.getConnection(url, username, password);
-        } catch (SQLException ex) {
-            System.out.println("SQLException: " + ex.getMessage());
+        for (String spec : specs) {
+            String eventParserPath = "/parsers/" + spec;
+            List<Object> chainrSpecJSON = JsonUtils.classpathToList(eventParserPath);
+            LOG.info("Loaded parser from {}", eventParserPath);
+            chainrs.put(spec, Chainr.fromSpec(chainrSpecJSON));
         }
     }
 
     public boolean parseTransaction(String transaction) {
-        System.out.println(jsonPrettyPrint(transaction));
-        Long processDefinitionKey = new JSONObject(transaction).getLong("sourceRecordPosition");
-        // TODO create caching for performance
-
-        try {
-            PreparedStatement ps = conn.prepareStatement(SELECT_SQL_QUERY_BY_PROCESS_DEFINITION_KEY_FROM_PROCESSDEFINITION);
-            ps.setLong(1, processDefinitionKey);
-            boolean processDefinitionExists = ps.execute();
-            conn.commit();
-            if (!processDefinitionExists) {
-                return false;
+        for (String key : chainrs.keySet()) {
+            Object transformedOutput = chainrs.get(key).transform(JsonUtils.jsonToObject(transaction));
+            if (transformedOutput == null) {
+                continue;
             }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
 
-        Object transformedOutput = chainr.transform(JsonUtils.jsonToObject(transaction));
-        if (transformedOutput == null) {
-            LOG.warn("Parsers did not parse transaction with processDefinitionKey: {}, transaction was: {}", processDefinitionKey, transaction);
-            return false;
+            // TODO create caching for performance
+            JSONObject json = new JSONObject(JsonUtils.toJsonString(transformedOutput));
+
+            if (isDeploymentEvent(key)) {
+                saveProcessDefinition(json);
+            } else {
+                saveEvent(json);
+            }
+            return true;
         }
-        saveEvent(JsonUtils.toJsonString(transformedOutput));
-        return true;
+        return false;
     }
 
-    private void saveEvent(String parsedJsonString) {
-        JSONObject json = new JSONObject(parsedJsonString);
+    private boolean isDeploymentEvent(String key) {
+        return "event_deployment_created_spec.json".equals(key);
+    }
 
-        Long key = json.getLong("key");
+    private void saveEvent(JSONObject json) {
+
+        if (json.has("processDefinitionKey")) {
+            Long processDefinitionKey = json.getLong("processDefinitionKey");
+            Optional<ProcessDefinition> processDefinition = processDefinitionRepository.findByProcessDefinitionKey(processDefinitionKey);
+            if (processDefinition.isEmpty()) {
+                LOG.warn("Could not find a processDefinition with processDefinitionKey {}", processDefinitionKey);
+                return;
+            }
+        }
 
         try {
-            PreparedStatement ps = conn.prepareStatement(INSERT_SQL_QUERY);
-            ps.setLong(1, key);
-            ps.setLong(2, json.getLong("processdefinitionkey"));
-            ps.setInt(3, json.getInt("version"));
-            ps.setLong(4, json.getLong("timestamp"));
-            ps.setString(5, json.getString("eventtext"));
-            ps.execute();
-            conn.commit();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            Long key = json.getLong("key");
+
+            Event event = new Event();
+            event.setKey(key);
+            event.setProcessDefinitionKey(json.getJSONObject("eventText").getLong("processDefinitionKey"));
+            event.setVersion(1);
+            event.setTimeStamp(json.getLong("timestamp"));
+            event.setEventText(json.getJSONObject("eventText").toString());
+            eventRepository.save(event);
+            LOG.info("Saved event with key: {}", key);
+        } catch (JSONException e) {
+            LOG.error(e.toString(), e);
         }
 
-        LOG.debug("Saved event with key: {}", key);
     }
 
-//    public void saveProcessDefinition(String joltParsedJson) {
-//        JSONObject jsonObject = new JSONObject(joltParsedJson);
-//
-//        ProcessDefinition processDefinition = new ProcessDefinition();
-//
-//        processDefinition.setId((Integer) jsonObject.get("id"));
-//        processDefinition.setProcessDefinitionKey((Long) jsonObject.get("processdefinitionkey"));
-//        processDefinition.setVersion((Integer) jsonObject.get("version"));
-//        processDefinition.setBpmnProcessid(jsonObject.get("timestamp").toString());
-//        processDefinition.setResourceName(jsonObject.get("eventtext").toString());
-//
-//        processDefinitionRepository.save(processDefinition);
-//
-//        LOG.info("Parsed as PROCESSDEFINITION");
-//    }
+    private void saveProcessDefinition(JSONObject json) {
+        try {
+            int id = json.getInt("id");
 
-    public String jsonPrettyPrint(String jsonString) {
-        return new JSONObject(jsonString).toString();
+            ProcessDefinition processDefinition = new ProcessDefinition();
+            processDefinition.setId(id);
+            processDefinition.setProcessDefinitionKey(json.getLong("processDefinitionKey"));
+            processDefinition.setVersion(json.getInt("version"));
+            processDefinition.setBpmnProcessId(json.getString("bpmnProcessId"));
+            processDefinition.setResourceName(json.getString("resourceName"));
+
+            processDefinitionRepository.save(processDefinition);
+            LOG.debug("Saved processDefinition with id: {}", id);
+        } catch (JSONException e) {
+            LOG.info("Did not save processDefinition, missing field");
+        }
     }
 }
