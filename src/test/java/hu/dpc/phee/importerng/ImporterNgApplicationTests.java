@@ -8,8 +8,7 @@ import java.util.List;
 
 class ImporterNgApplicationTests {
 
-    String transaction = "{\"partitionId\":1,\"value\":{\"type\":\"hello-world\",\"errorMessage\":\"\",\"errorCode\":\"\",\"variables\":{},\"worker\":\"\",\"deadline\":-1,\"bpmnProcessId\":\"HelloProcess\",\"processDefinitionKey\":2251799813693651,\"customHeaders\":{},\"retries\":3,\"elementId\":\"HelloTask\",\"elementInstanceKey\":2251799813702305,\"processDefinitionVersion\":4,\"processInstanceKey\":2251799813693742},\"key\":2251799813702306,\"sourceRecordPosition\":41628,\"position\":41632,\"valueType\":\"JOB\",\"timestamp\":1629383865490,\"recordType\":\"EVENT\",\"rejectionReason\":\"\",\"brokerVersion\":\"1.1.0\",\"intent\":\"CREATED\",\"rejectionType\":\"NULL_VAL\"}";
-
+    String transaction = "\"partitionId\":1,\"value\":{\"name\":\"hellonumber\",\"value\":\"2\",\"processDefinitionKey\":2251799813691970,\"processInstanceKey\":2251799813692700,\"scopeKey\":2251799813692700},\"key\":2251799813692718,\"sourceRecordPosition\":19743,\"position\":19746,\"valueType\":\"VARIABLE\",\"timestamp\":1629902023868,\"recordType\":\"EVENT\",\"intent\":\"CREATED\",\"rejectionType\":\"NULL_VAL\",\"rejectionReason\":\"\",\"brokerVersion\":\"1.1.0\"}";
     @Test
     public void parse() {
         System.out.println("Setup started");

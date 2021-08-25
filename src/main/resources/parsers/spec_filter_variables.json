@@ -1,0 +1,41 @@
+[
+  {
+    "operation": "shift",
+    "spec": {
+      "@(intent)": {
+        "CREATED": {
+          "@(1,key)": "key",
+          "@(1,valueType)": "valueType",
+          "@(1,timestamp)": "timestamp",
+          "@(1,recordType)": "recordType"
+        }
+      }
+    }
+  },
+  {
+    "operation": "shift",
+    "spec": {
+      "@(recordType)": {
+        "EVENT": {
+          "@(1,key)": "key",
+          "@(1,valueType)": "valueType",
+          "@(1,timestamp)": "timestamp",
+          "@(1,recordType)": "recordType"
+        }
+      }
+    }
+  },
+  {
+    "operation": "shift",
+    "spec": {
+      "@(valueType)": {
+        "VARIABLE": {
+          "@(1,key)": "key",
+          "@(1,valueType)": "valueType",
+          "@(1,timestamp)": "timestamp",
+          "@(1,recordType)": "recordType"
+        }
+      }
+    }
+  }
+]
