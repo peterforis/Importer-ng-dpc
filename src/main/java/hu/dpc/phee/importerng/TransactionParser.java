@@ -2,7 +2,6 @@ package hu.dpc.phee.importerng;
 
 import com.bazaarvoice.jolt.Chainr;
 import com.bazaarvoice.jolt.JsonUtils;
-import hu.dpc.phee.importerng.db.repository.EventRepository;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +48,8 @@ public class TransactionParser {
     }
 
     public boolean parseTransaction(String transaction) {
-        Long processDefinitionKey = new JSONObject(transaction).getLong("processdefinitionkey");
+        System.out.println(jsonPrettyPrint(transaction));
+        Long processDefinitionKey = new JSONObject(transaction).getLong("sourceRecordPosition");
         // TODO create caching for performance
 
         try {
