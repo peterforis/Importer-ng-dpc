@@ -15,7 +15,7 @@
     "operation": "shift",
     "spec": {
       "@(valueType)": {
-        "VARIABLE": {
+        "JOB": {
           "@(2,value)": "value",
           "@(2,valueType)": "valueType",
           "@(2,intent)": "intent"
@@ -27,8 +27,8 @@
     "operation": "shift",
     "spec": {
       "value": {
-        "name": "name",
-        "value": "value",
+        "type": "type",
+        "elementId": "elementId",
         "processDefinitionKey": "processDefinitionKey",
         "processInstanceKey": "processInstanceKey"
       },

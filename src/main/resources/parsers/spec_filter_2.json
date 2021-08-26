@@ -2,7 +2,9 @@
   {
     "operation": "shift",
     "spec": {
-          "value": "eventText",
+          "value": {
+            "name" : "name"
+          },
           "key": "key",
           "timestamp": "timestamp"
     }
