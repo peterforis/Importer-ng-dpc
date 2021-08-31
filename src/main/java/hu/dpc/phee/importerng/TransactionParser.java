@@ -72,7 +72,7 @@ public class TransactionParser {
     }
 
     private boolean isDeploymentEvent(String key) {
-        return "event_deployment_created_spec.json".equals(key);
+        return "spec_filter_deployment_created.json".equals(key);
     }
 
     private void saveEvent(JSONObject json) {
@@ -91,9 +91,10 @@ public class TransactionParser {
 
             Event event = new Event();
             event.setKey(key);
-            event.setProcessDefinitionKey(json.getJSONObject("eventText").getLong("processDefinitionKey"));
-            event.setVersion(1);
             event.setTimeStamp(json.getLong("timestamp"));
+            event.setValueType(json.getString("valueType"));
+            event.setIntent(json.getString("intent"));
+            event.setProcessDefinitionKey(json.getJSONObject("eventText").getLong("processDefinitionKey"));
             event.setEventText(json.getJSONObject("eventText").toString());
             eventRepository.save(event);
             LOG.info("Saved event with key: {}", key);

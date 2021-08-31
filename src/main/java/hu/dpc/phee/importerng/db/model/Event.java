@@ -7,9 +7,10 @@ public class Event implements Persistable<Long> {
 
     @Id
     private Long key;
-    private Long processDefinitionKey;
-    private int version;
     private Long timeStamp;
+    private String valueType;
+    private String intent;
+    private Long processDefinitionKey;
     private String eventText;
 
     public Event() {
@@ -23,28 +24,36 @@ public class Event implements Persistable<Long> {
         this.key = key;
     }
 
-    public Long getProcessDefinitionKey() {
-        return processDefinitionKey;
-    }
-
-    public void setProcessDefinitionKey(Long processDefinitionKey) {
-        this.processDefinitionKey = processDefinitionKey;
-    }
-
-    public int getVersion() {
-        return version;
-    }
-
-    public void setVersion(int version) {
-        this.version = version;
-    }
-
     public Long getTimeStamp() {
         return timeStamp;
     }
 
     public void setTimeStamp(Long timeStamp) {
         this.timeStamp = timeStamp;
+    }
+
+    public String getValueType() {
+        return valueType;
+    }
+
+    public void setValueType(String valueType) {
+        this.valueType = valueType;
+    }
+
+    public String getIntent() {
+        return intent;
+    }
+
+    public void setIntent(String intent) {
+        this.intent = intent;
+    }
+
+    public Long getProcessDefinitionKey() {
+        return processDefinitionKey;
+    }
+
+    public void setProcessDefinitionKey(Long processDefinitionKey) {
+        this.processDefinitionKey = processDefinitionKey;
     }
 
     public String getEventText() {

@@ -50,7 +50,7 @@ public class ParserDemo {
 
     public static void parse(String transaction){
         System.out.println("Setup started");
-        String eventParserPath = "/parsers/event_deployment_created_spec.json";
+        String eventParserPath = "/parsers/spec_filter_deployment_created.json";
         List<Object> chainrSpecJSON = JsonUtils.classpathToList(eventParserPath);
         Chainr chainr = Chainr.fromSpec(chainrSpecJSON);
         System.out.println("Setup ended");

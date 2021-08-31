@@ -4,6 +4,8 @@
     "spec": {
       "@(intent)": {
         "CREATED": {
+          "@(2,key)": "key",
+          "@(2,timestamp)": "timestamp",
           "@(2,value)": "value",
           "@(2,valueType)": "valueType",
           "@(2,intent)": "intent"
@@ -16,6 +18,8 @@
     "spec": {
       "@(valueType)": {
         "JOB": {
+          "@(2,key)": "key",
+          "@(2,timestamp)": "timestamp",
           "@(2,value)": "value",
           "@(2,valueType)": "valueType",
           "@(2,intent)": "intent"
@@ -26,14 +30,16 @@
   {
     "operation": "shift",
     "spec": {
-      "value": {
-        "type": "type",
-        "elementId": "elementId",
-        "processDefinitionKey": "processDefinitionKey",
-        "processInstanceKey": "processInstanceKey"
-      },
+      "key": "key",
+      "timestamp": "timestamp",
       "valueType": "valueType",
-      "intent": "intent"
+      "intent": "intent",
+      "value": {
+        "type": "eventText.type",
+        "elementId": "eventText.elementId",
+        "processDefinitionKey": "processDefinitionKey",
+        "processInstanceKey": "eventText.processInstanceKey"
+      }
     }
   }
 ]
